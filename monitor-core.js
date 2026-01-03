@@ -40,7 +40,6 @@ function drawNowDoseChart(value = displayValue) {
         offsetY = canvas.height * 0.37;
     }
 
-
     const centerY = canvas.height - radius - lineWidth / 2 + offsetY;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -197,4 +196,3 @@ window.addEventListener('resize', () => {
   drawLastMinChart();
   drawNowDoseChart();
 });
-

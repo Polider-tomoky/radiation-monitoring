@@ -111,6 +111,13 @@ body::before {
     opacity: 0.7;
 }
 
+@media (max-width: 480px) {
+  .gauge-container {
+    margin-top: 60px; /* смещение вниз на телефоне */
+  }
+}
+
+
 /* Segments */
 .segments {
     margin-top: 32px;

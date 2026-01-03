@@ -31,14 +31,10 @@ function drawNowDoseChart(value = displayValue) {
 
     // Адаптивное смещение по Y относительно родителя
     const parentWidth = canvas.parentElement.getBoundingClientRect().width;
+    
+    let offsetY = (parentWidth < 400) ? canvas.height * 0.7 : canvas.height * 0.37;
 
-    let offsetY;
-
-    if (parentWidth < 400) {       // маленькие экраны (телефон)
-        offsetY = canvas.height * 0.7; 
-    } else {                       // большие экраны (ПК)
-        offsetY = canvas.height * 0.37;
-    }
+    console.log(parentWidth)
 
     const centerY = canvas.height - radius - lineWidth / 2 + offsetY;
 

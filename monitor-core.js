@@ -29,7 +29,7 @@ function drawNowDoseChart(value = displayValue) {
 
     let offsetY;
     if (window.innerWidth < 768) { 
-        offsetY = canvas.height * 0.5; 
+        offsetY = canvas.height * 0.9; 
     } else {
         offsetY = canvas.height * 0.37; 
     }

@@ -1,4 +1,3 @@
-// Data storage
 const maxRandomValue = 1.5;
 let targetValue = 0.1;    
 let displayValue = 0.1;   
@@ -21,32 +20,36 @@ function getColor(value) {
 }
 
 function drawNowDoseChart(value = displayValue) {
-  const canvas = document.getElementById('nowDoseChar');
-  const ctx = canvas.getContext('2d');
-  const centerX = canvas.width / 2;
-  const centerY = canvas.height * 0.85;
-  const radius = 120;
-  const lineWidth = 30;
+    const canvas = document.getElementById('nowDoseChar');
+    const ctx = canvas.getContext('2d');
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const centerX = canvas.width / 2;
+    const radius = 120; 
+    const lineWidth = 30;
 
-  ctx.beginPath();
-  ctx.arc(centerX, centerY, radius, Math.PI, 2 * Math.PI);
-  ctx.lineWidth = lineWidth;
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
-  ctx.stroke();
+    const offsetY = canvas.height * 0.37;
+    const centerY = canvas.height - radius - lineWidth / 2 + offsetY;
 
-  const maxValue = 1.0;
-  const percentage = Math.min(value / maxValue, 1);
-  const endAngle = Math.PI + (Math.PI * percentage);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  ctx.beginPath();
-  ctx.arc(centerX, centerY, radius, Math.PI, endAngle);
-  ctx.lineWidth = lineWidth;
-  ctx.strokeStyle = getColor(value);
-  ctx.globalAlpha = 0.9;
-  ctx.stroke();
-  ctx.globalAlpha = 1;
+    // Фон
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, Math.PI, 2 * Math.PI);
+    ctx.lineWidth = lineWidth;
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+    ctx.stroke();
+
+    const maxValue = 1.0;
+    const percentage = Math.min(value / maxValue, 1);
+    const endAngle = Math.PI + (Math.PI * percentage);
+
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, Math.PI, endAngle);
+    ctx.lineWidth = lineWidth;
+    ctx.strokeStyle = getColor(value);
+    ctx.globalAlpha = 0.9;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
 }
 
 function drawLastMinChart() {
@@ -159,6 +162,18 @@ function simulateReading() {
   historicalData.push(targetValue);
   if (historicalData.length > 60) historicalData.shift();
 }
+
+function resizeGaugeCanvas() {
+    const canvas = document.getElementById('nowDoseChar');
+    const rect = canvas.parentElement.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = rect.width / 2; 
+    drawNowDoseChart();
+}
+
+window.addEventListener('resize', resizeGaugeCanvas);
+window.addEventListener('load', resizeGaugeCanvas);
+
 
 updateDisplay();
 setInterval(simulateReading, 1000);

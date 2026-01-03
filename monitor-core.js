@@ -27,11 +27,17 @@ function drawNowDoseChart(value = displayValue) {
     const radius = 120; 
     const lineWidth = 30;
 
+    const parentRect = canvas.parentElement.getBoundingClientRect();
+
+    // Адаптивное смещение по Y относительно родителя
+    const parentWidth = canvas.parentElement.getBoundingClientRect().width;
+    
     let offsetY;
-    if (window.innerWidth < 768) { 
-        offsetY = canvas.height * 0.9; 
-    } else {
-        offsetY = canvas.height * 0.37; 
+
+    if (parentWidth < 400) {       // маленькие экраны (телефон)
+        offsetY = canvas.height * 0.55; 
+    } else {                       // большие экраны (ПК)
+        offsetY = canvas.height * 0.37;
     }
 
     const centerY = canvas.height - radius - lineWidth / 2 + offsetY;
@@ -57,6 +63,7 @@ function drawNowDoseChart(value = displayValue) {
     ctx.stroke();
     ctx.globalAlpha = 1;
 }
+
 
 function drawLastMinChart() {
   const canvas = document.getElementById('lastMinChart');

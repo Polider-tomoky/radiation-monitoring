@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Radiation Monitor</title>
+    <link rel='stylesheet' href='radiation-monitor.css'>
+    <script src='monitor-core.js' defer></script>
+</head>
+<body>
+    <div class="panel">
+        <!-- Header -->
+        <div class="header">
+            <div class="title">RADIATION MONITOR</div>
+            <div class="divider"></div>
+        </div>
+
+        <!-- Gauge -->
+        <div class="gauge-container">
+            <div class="glow" id="glow"></div>
+            <canvas id="nowDoseChar" width="480" height="240"></canvas>
+            <div class="value-display">
+                <div class="current-value" id="currentValue">0.1</div>
+                <div class="unit">μSv/h</div>
+                <div class="status" id="status">NORMAL</div>
+            </div>
+        </div>
+
+        <!-- Segments -->
+        <div class="segments">
+            <div class="segment" id="segment-normal">
+                <div class="segment-dot" style="background-color: #3b82f6;"></div>
+                <div class="segment-info">
+                    <div class="segment-label">NORMAL</div>
+                    <div class="segment-range">0 - 0.3</div>
+                </div>
+            </div>
+            <div class="segment" id="segment-elevated">
+                <div class="segment-dot" style="background-color: #eab308;"></div>
+                <div class="segment-info">
+                    <div class="segment-label">ELEVATED</div>
+                    <div class="segment-range">0.3 - 1</div>
+                </div>
+            </div>
+            <div class="segment" id="segment-danger">
+                <div class="segment-dot" style="background-color: #ef4444;"></div>
+                <div class="segment-info">
+                    <div class="segment-label">DANGER</div>
+                    <div class="segment-range">≥ 1</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart -->
+        <div class="chart-section">
+            <div class="chart-title">TEMPORAL ANALYSIS</div>
+            <canvas id="lastMinChart"></canvas>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="status-text">LIVE MONITORING</div>
+            <div class="time" id="time">00:00:00</div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,199 +1,191 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+const maxRandomValue = 1.5;
+let targetValue = 0.1;    
+let displayValue = 0.1;   
+let historicalData = [];
+
+for (let i = 0; i < 60; i++) {
+  historicalData.push(0.08 + Math.random() * 0.08);
 }
 
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0f0f0f 100%);
-    position: relative;
-    overflow: hidden;
-}
-      
-body::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    opacity: 0.015;
-    pointer-events: none;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-}
-   
-.panel {
-    position: relative;
-    z-index: 10;
-    width: 600px;
-    max-width: 90vw;
-    padding: 24px; /* уменьшили паддинг для мобильных */
-    box-sizing: border-box;
-    backdrop-filter: blur(40px);
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 16px;
-    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+function getLevel(value) {
+  if (value < 0.3) return 'NORMAL';
+  if (value < 1) return 'ELEVATED';
+  return 'DANGER';
 }
 
-/* Header */
-.header {
-    margin-bottom: 48px;
+function getColor(value) {
+  if (value < 0.3) return '#3b82f6';
+  if (value < 1) return '#eab308';
+  return '#ef4444';
 }
 
-.title {
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 12px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    margin-bottom: 8px;
+function drawNowDoseChart(value = displayValue) {
+    const canvas = document.getElementById('nowDoseChar');
+    const ctx = canvas.getContext('2d');
+
+    const centerX = canvas.width / 2;
+    const radius = 120; 
+    const lineWidth = 30;
+
+    let offsetY;
+    if (window.innerWidth < 768) { 
+        offsetY = canvas.height * 0.5; 
+    } else {
+        offsetY = canvas.height * 0.37; 
+    }
+
+    const centerY = canvas.height - radius - lineWidth / 2 + offsetY;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Фон
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, Math.PI, 2 * Math.PI);
+    ctx.lineWidth = lineWidth;
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+    ctx.stroke();
+
+    const maxValue = 1.0;
+    const percentage = Math.min(value / maxValue, 1);
+    const endAngle = Math.PI + (Math.PI * percentage);
+
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, Math.PI, endAngle);
+    ctx.lineWidth = lineWidth;
+    ctx.strokeStyle = getColor(value);
+    ctx.globalAlpha = 0.9;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
 }
 
-.divider {
-    height: 1px;
-    width: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+function drawLastMinChart() {
+  const canvas = document.getElementById('lastMinChart');
+  const ctx = canvas.getContext('2d');
+  
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * window.devicePixelRatio;
+  canvas.height = 160 * window.devicePixelRatio;
+  ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+  const width = rect.width;
+  const height = 160;
+  const padding = { top: 10, right: 10, bottom: 30, left: 50 };
+  const chartWidth = width - padding.left - padding.right;
+  const chartHeight = height - padding.top - padding.bottom;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+      const y = padding.top + (chartHeight / 4) * i;
+      ctx.beginPath();
+      ctx.moveTo(padding.left, y);
+      ctx.lineTo(width - padding.right, y);
+      ctx.stroke();
+  }
+
+  const maxValue = Math.max(...historicalData, 0.5);
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+  ctx.font = '10px monospace';
+  ctx.textAlign = 'right';
+  for (let i = 0; i <= 4; i++) {
+      const value = maxValue - (maxValue / 4) * i;
+      const y = padding.top + (chartHeight / 4) * i;
+      ctx.fillText(value.toFixed(2), padding.left - 5, y + 4);
+  }
+
+  ctx.textAlign = 'center';
+  for (let i = 0; i <= 4; i++) {
+      const x = padding.left + (chartWidth / 4) * i;
+      const seconds = Math.floor((60 / 4) * i);
+      ctx.fillText(`${seconds}s`, x, height - 10);
+  }
+
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(padding.left, padding.top);
+  ctx.lineTo(padding.left, height - padding.bottom);
+  ctx.lineTo(width - padding.right, height - padding.bottom);
+  ctx.stroke();
+
+  if (historicalData.length > 0) {
+      ctx.beginPath();
+      ctx.strokeStyle = '#60a5fa';
+      ctx.lineWidth = 1.5;
+      ctx.globalAlpha = 0.8;
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+
+      for (let i = 0; i < historicalData.length; i++) {
+          const x = padding.left + (chartWidth / (historicalData.length - 1)) * i;
+          const normalizedValue = 1 - (historicalData[i] / maxValue);
+          const y = padding.top + chartHeight * normalizedValue;
+
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+      }
+
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+  }
 }
 
-.gauge-container {
-    position: relative;
-    width: 100%;
-    max-width: 480px;
-    aspect-ratio: 2 / 1.17; /* ширина/высота полупончика */
-    margin: 0 auto;
+function updateDisplay() {
+  document.getElementById('currentValue').textContent = displayValue.toFixed(3);
+  document.getElementById('currentValue').style.color = getColor(displayValue);
+
+  const status = getLevel(displayValue);
+  document.getElementById('status').textContent = status;
+  document.getElementById('status').style.color = getColor(displayValue);
+
+  const glow = document.getElementById('glow');
+  glow.style.background = `radial-gradient(circle, ${getColor(displayValue)} 0%, transparent 70%)`;
+
+  document.getElementById('segment-normal').style.opacity = displayValue < 0.3 ? '1' : '0.3';
+  document.getElementById('segment-elevated').style.opacity = 
+      (displayValue >= 0.3 && displayValue < 1) ? '1' : '0.3';
+  document.getElementById('segment-danger').style.opacity = displayValue >= 1 ? '1' : '0.3';
+
+  const now = new Date();
+  document.getElementById('time').textContent = now.toLocaleTimeString('en-US', { hour12: false });
+
+  drawNowDoseChart();
+  drawLastMinChart();
 }
 
-.glow {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 256px;
-    height: 256px;
-    border-radius: 50%;
-    filter: blur(60px);
-    opacity: 0.2;
-    transition: background 1s ease;
+function animate() {
+  const speed = 0.06; 
+  displayValue += (targetValue - displayValue) * speed;
+  updateDisplay();
+  requestAnimationFrame(animate);
 }
 
-.value-display {
-    position: absolute;
-    bottom: 0;               
-    left: 50%;
-    transform: translateX(-50%);
-    text-align: center;
+function simulateReading() {
+  targetValue = Math.random() * maxRandomValue; 
+
+  historicalData.push(targetValue);
+  if (historicalData.length > 60) historicalData.shift();
 }
 
-.current-value {
-    font-family: 'Courier New', monospace;
-    font-size: 56px;
-    letter-spacing: -0.02em;
-    transition: color 0.3s ease;
+function resizeGaugeCanvas() {
+    const canvas = document.getElementById('nowDoseChar');
+    const rect = canvas.parentElement.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = rect.width / 2; 
+    drawNowDoseChart();
 }
 
-.unit {
-    color: rgba(255, 255, 255, 0.4);
-    font-size: 14px;
-    letter-spacing: 0.2em;
-    margin-top: 8px;
-}
-
-.status {
-    margin-top: 12px;
-    font-size: 12px;
-    letter-spacing: 0.15em;
-    transition: color 0.3s ease;
-    opacity: 0.7;
-}
-
-/* Segments */
-.segments {
-    margin-top: 32px;
-    display: flex;
-    justify-content: center;
-    gap: 24px;
-}
-
-.segment {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: opacity 0.3s ease;
-}
-
-.segment-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-}
-
-.segment-info {
-    font-size: 12px;
-}
-
-.segment-label {
-    color: rgba(255, 255, 255, 0.6);
-    letter-spacing: 0.05em;
-}
-
-.segment-range {
-    font-family: 'Courier New', monospace;
-    color: rgba(255, 255, 255, 0.3);
-    font-size: 10px;
-}
-
-/* Chart section */
-.chart-section {
-    margin-top: 48px;
-}
-
-.chart-title {
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 11px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    margin-bottom: 16px;
-}
-#nowDoseChart {
-    display: block;
-    width: 100%;
-    height: 100%;       
-}
-
-#lastMinChart {
-    display: block;
-    width: 100%;
-    height: 160px;
-}
+window.addEventListener('resize', resizeGaugeCanvas);
+window.addEventListener('load', resizeGaugeCanvas);
 
 
-/* Footer */
-.footer {
-    margin-top: 32px;
-    padding-top: 24px;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 11px;
-}
+updateDisplay();
+setInterval(simulateReading, 1000);
+animate();
 
-.status-text {
-    color: rgba(255, 255, 255, 0.4);
-    letter-spacing: 0.05em;
-}
-
-.time {
-    font-family: 'Courier New', monospace;
-    color: rgba(255, 255, 255, 0.3);
-}
-
-/* Colors */
-.color-normal { color: #3b82f6; }
-.color-elevated { color: #eab308; }
-.color-danger { color: #ef4444; }
+window.addEventListener('resize', () => {
+  drawLastMinChart();
+  drawNowDoseChart();
+});

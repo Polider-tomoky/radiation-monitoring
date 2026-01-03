@@ -27,7 +27,13 @@ function drawNowDoseChart(value = displayValue) {
     const radius = 120; 
     const lineWidth = 30;
 
-    const offsetY = canvas.height * 0.37;
+    let offsetY;
+    if (window.innerWidth < 768) { 
+        offsetY = canvas.height * 0.5; 
+    } else {
+        offsetY = canvas.height * 0.37; 
+    }
+
     const centerY = canvas.height - radius - lineWidth / 2 + offsetY;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);

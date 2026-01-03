@@ -1,24 +1,35 @@
+// ╔════════════════════════════════════════╗
+// ║           Настройки и переменные       ║
+// ╚════════════════════════════════════════╝
 const maxRandomValue = 1.5;
 let targetValue = 0.1;    
 let displayValue = 0.1;   
 let historicalData = [];
 
+// ──────────────────────────────────────────
+// Инициализация исторических данных
 for (let i = 0; i < 60; i++) {
-  historicalData.push(0.08 + Math.random() * 0.08);
+    historicalData.push(0.08 + Math.random() * 0.08);
 }
 
+// ╔════════════════════════════════════════╗
+// ║           Функции цвета и уровня       ║
+// ╚════════════════════════════════════════╝
 function getLevel(value) {
-  if (value < 0.3) return 'NORMAL';
-  if (value < 1) return 'ELEVATED';
-  return 'DANGER';
+    if (value < 0.3) return 'NORMAL';
+    if (value < 1) return 'ELEVATED';
+    return 'DANGER';
 }
 
 function getColor(value) {
-  if (value < 0.3) return '#3b82f6';
-  if (value < 1) return '#eab308';
-  return '#ef4444';
+    if (value < 0.3) return '#3b82f6';
+    if (value < 1) return '#eab308';
+    return '#ef4444';
 }
 
+// ╔════════════════════════════════════════╗
+// ║        График текущей дозы (пончик)   ║
+// ╚════════════════════════════════════════╝
 function drawNowDoseChart(value = displayValue) {
     const canvas = document.getElementById('nowDoseChar');
     const ctx = canvas.getContext('2d');
@@ -27,26 +38,23 @@ function drawNowDoseChart(value = displayValue) {
     const radius = 120; 
     const lineWidth = 30;
 
-    const parentRect = canvas.parentElement.getBoundingClientRect();
-
-    // Адаптивное смещение по Y относительно родителя
+    // ╔═ Мелкие подсказки ═╗
     const parentWidth = canvas.parentElement.getBoundingClientRect().width;
-    
     let offsetY = (parentWidth < 400) ? canvas.height * 0.7 : canvas.height * 0.37;
-
-    console.log(parentWidth)
-
     const centerY = canvas.height - radius - lineWidth / 2 + offsetY;
+    // ╚═══════════════════╝
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Фон
+    // ╔═ Фон полупончика ═╗
     ctx.beginPath();
     ctx.arc(centerX, centerY, radius, Math.PI, 2 * Math.PI);
     ctx.lineWidth = lineWidth;
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
     ctx.stroke();
+    // ╚══════════════════╝
 
+    // ╔═ Активная дуга ═╗
     const maxValue = 1.0;
     const percentage = Math.min(value / maxValue, 1);
     const endAngle = Math.PI + (Math.PI * percentage);
@@ -58,120 +66,138 @@ function drawNowDoseChart(value = displayValue) {
     ctx.globalAlpha = 0.9;
     ctx.stroke();
     ctx.globalAlpha = 1;
+    // ╚═════════════════╝
 }
 
-
+// ╔════════════════════════════════════════╗
+// ║        График за последнюю минуту     ║
+// ╚════════════════════════════════════════╝
 function drawLastMinChart() {
-  const canvas = document.getElementById('lastMinChart');
-  const ctx = canvas.getContext('2d');
-  
-  const rect = canvas.getBoundingClientRect();
-  canvas.width = rect.width * window.devicePixelRatio;
-  canvas.height = 160 * window.devicePixelRatio;
-  ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    const canvas = document.getElementById('lastMinChart');
+    const ctx = canvas.getContext('2d');
 
-  const width = rect.width;
-  const height = 160;
-  const padding = { top: 10, right: 10, bottom: 30, left: 50 };
-  const chartWidth = width - padding.left - padding.right;
-  const chartHeight = height - padding.top - padding.bottom;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * window.devicePixelRatio;
+    canvas.height = 160 * window.devicePixelRatio;
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const width = rect.width;
+    const height = 160;
+    const padding = { top: 10, right: 10, bottom: 30, left: 50 };
+    const chartWidth = width - padding.left - padding.right;
+    const chartHeight = height - padding.top - padding.bottom;
 
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
-  ctx.lineWidth = 1;
-  for (let i = 0; i <= 4; i++) {
-      const y = padding.top + (chartHeight / 4) * i;
-      ctx.beginPath();
-      ctx.moveTo(padding.left, y);
-      ctx.lineTo(width - padding.right, y);
-      ctx.stroke();
-  }
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  const maxValue = Math.max(...historicalData, 0.5);
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-  ctx.font = '10px monospace';
-  ctx.textAlign = 'right';
-  for (let i = 0; i <= 4; i++) {
-      const value = maxValue - (maxValue / 4) * i;
-      const y = padding.top + (chartHeight / 4) * i;
-      ctx.fillText(value.toFixed(2), padding.left - 5, y + 4);
-  }
+    // ╔═ Сетка и подписи ═╗
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 4; i++) {
+        const y = padding.top + (chartHeight / 4) * i;
+        ctx.beginPath();
+        ctx.moveTo(padding.left, y);
+        ctx.lineTo(width - padding.right, y);
+        ctx.stroke();
+    }
 
-  ctx.textAlign = 'center';
-  for (let i = 0; i <= 4; i++) {
-      const x = padding.left + (chartWidth / 4) * i;
-      const seconds = Math.floor((60 / 4) * i);
-      ctx.fillText(`${seconds}s`, x, height - 10);
-  }
+    const maxValue = Math.max(...historicalData, 0.5);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+    ctx.font = '10px monospace';
+    ctx.textAlign = 'right';
+    for (let i = 0; i <= 4; i++) {
+        const value = maxValue - (maxValue / 4) * i;
+        const y = padding.top + (chartHeight / 4) * i;
+        ctx.fillText(value.toFixed(2), padding.left - 5, y + 4);
+    }
 
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(padding.left, padding.top);
-  ctx.lineTo(padding.left, height - padding.bottom);
-  ctx.lineTo(width - padding.right, height - padding.bottom);
-  ctx.stroke();
+    ctx.textAlign = 'center';
+    for (let i = 0; i <= 4; i++) {
+        const x = padding.left + (chartWidth / 4) * i;
+        const seconds = Math.floor((60 / 4) * i);
+        ctx.fillText(`${seconds}s`, x, height - 10);
+    }
 
-  if (historicalData.length > 0) {
-      ctx.beginPath();
-      ctx.strokeStyle = '#60a5fa';
-      ctx.lineWidth = 1.5;
-      ctx.globalAlpha = 0.8;
-      ctx.lineJoin = 'round';
-      ctx.lineCap = 'round';
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(padding.left, padding.top);
+    ctx.lineTo(padding.left, height - padding.bottom);
+    ctx.lineTo(width - padding.right, height - padding.bottom);
+    ctx.stroke();
+    // ╚═════════════════╝
 
-      for (let i = 0; i < historicalData.length; i++) {
-          const x = padding.left + (chartWidth / (historicalData.length - 1)) * i;
-          const normalizedValue = 1 - (historicalData[i] / maxValue);
-          const y = padding.top + chartHeight * normalizedValue;
+    // ╔═ Линия графика ═╗
+    if (historicalData.length > 0) {
+        ctx.beginPath();
+        ctx.strokeStyle = '#60a5fa';
+        ctx.lineWidth = 1.5;
+        ctx.globalAlpha = 0.8;
+        ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
 
-          if (i === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
-      }
+        for (let i = 0; i < historicalData.length; i++) {
+            const x = padding.left + (chartWidth / (historicalData.length - 1)) * i;
+            const normalizedValue = 1 - (historicalData[i] / maxValue);
+            const y = padding.top + chartHeight * normalizedValue;
 
-      ctx.stroke();
-      ctx.globalAlpha = 1;
-  }
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+    }
+    // ╚═══════════════╝
 }
 
+// ╔════════════════════════════════════════╗
+// ║         Обновление данных и UI         ║
+// ╚════════════════════════════════════════╝
 function updateDisplay() {
-  document.getElementById('currentValue').textContent = displayValue.toFixed(3);
-  document.getElementById('currentValue').style.color = getColor(displayValue);
+    document.getElementById('currentValue').textContent = displayValue.toFixed(3);
+    document.getElementById('currentValue').style.color = getColor(displayValue);
 
-  const status = getLevel(displayValue);
-  document.getElementById('status').textContent = status;
-  document.getElementById('status').style.color = getColor(displayValue);
+    const status = getLevel(displayValue);
+    document.getElementById('status').textContent = status;
+    document.getElementById('status').style.color = getColor(displayValue);
 
-  const glow = document.getElementById('glow');
-  glow.style.background = `radial-gradient(circle, ${getColor(displayValue)} 0%, transparent 70%)`;
+    const glow = document.getElementById('glow');
+    glow.style.background = `radial-gradient(circle, ${getColor(displayValue)} 0%, transparent 70%)`;
 
-  document.getElementById('segment-normal').style.opacity = displayValue < 0.3 ? '1' : '0.3';
-  document.getElementById('segment-elevated').style.opacity = 
-      (displayValue >= 0.3 && displayValue < 1) ? '1' : '0.3';
-  document.getElementById('segment-danger').style.opacity = displayValue >= 1 ? '1' : '0.3';
+    document.getElementById('segment-normal').style.opacity = displayValue < 0.3 ? '1' : '0.3';
+    document.getElementById('segment-elevated').style.opacity = 
+        (displayValue >= 0.3 && displayValue < 1) ? '1' : '0.3';
+    document.getElementById('segment-danger').style.opacity = displayValue >= 1 ? '1' : '0.3';
 
-  const now = new Date();
-  document.getElementById('time').textContent = now.toLocaleTimeString('en-US', { hour12: false });
+    const now = new Date();
+    document.getElementById('time').textContent = now.toLocaleTimeString('en-US', { hour12: false });
 
-  drawNowDoseChart();
-  drawLastMinChart();
+    drawNowDoseChart();
+    drawLastMinChart();
 }
 
+// ╔════════════════════════════════════════╗
+// ║              Анимация                   ║
+// ╚════════════════════════════════════════╝
 function animate() {
-  const speed = 0.06; 
-  displayValue += (targetValue - displayValue) * speed;
-  updateDisplay();
-  requestAnimationFrame(animate);
+    const speed = 0.06; 
+    displayValue += (targetValue - displayValue) * speed;
+    updateDisplay();
+    requestAnimationFrame(animate);
 }
 
+// ╔════════════════════════════════════════╗
+// ║        Симуляция показаний             ║
+// ╚════════════════════════════════════════╝
 function simulateReading() {
-  targetValue = Math.random() * maxRandomValue; 
-
-  historicalData.push(targetValue);
-  if (historicalData.length > 60) historicalData.shift();
+    targetValue = Math.random() * maxRandomValue; 
+    historicalData.push(targetValue);
+    if (historicalData.length > 60) historicalData.shift();
 }
 
+// ╔════════════════════════════════════════╗
+// ║         Адаптивный ресайз              ║
+// ╚════════════════════════════════════════╝
 function resizeGaugeCanvas() {
     const canvas = document.getElementById('nowDoseChar');
     const rect = canvas.parentElement.getBoundingClientRect();
@@ -183,12 +209,11 @@ function resizeGaugeCanvas() {
 window.addEventListener('resize', resizeGaugeCanvas);
 window.addEventListener('load', resizeGaugeCanvas);
 
-
 updateDisplay();
 setInterval(simulateReading, 1000);
 animate();
 
 window.addEventListener('resize', () => {
-  drawLastMinChart();
-  drawNowDoseChart();
+    drawLastMinChart();
+    drawNowDoseChart();
 });

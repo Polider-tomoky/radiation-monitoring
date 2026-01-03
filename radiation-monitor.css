@@ -29,12 +29,16 @@ body::before {
     z-index: 10;
     width: 600px;
     max-width: 90vw;
+    padding: 24px; /* уменьшили паддинг для мобильных */
+    box-sizing: border-box;
     backdrop-filter: blur(40px);
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 16px;
-    padding: 48px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 /* Header */

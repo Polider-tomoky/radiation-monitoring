@@ -58,9 +58,9 @@ body::before {
 
 .gauge-container {
     position: relative;
-    width: 85%;
-    height: 48vw;       
-    max-height: 240px;  
+    width: 100%;
+    max-width: 480px;
+    aspect-ratio: 2 / 1.17; /* ширина/высота полупончика */
     margin: 0 auto;
 }
 
